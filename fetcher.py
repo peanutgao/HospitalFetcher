@@ -79,8 +79,10 @@ def start_fetcher():
     provinces = request_provinces()
 
     for p in provinces:
+        save_cities_2_db(cursor, p, db)
+        
         cities = request_city(p['id'])
-
+        
         for c in cities:
             print("--> 正在抓取：%s" % c)
 
@@ -91,10 +93,11 @@ def start_fetcher():
 
             for h in hospitals:
                 print("--> 正在抓取：%s" % h)
-                save_hospitals_2_db(cursor, c, db)
+                save_hospitals_2_db(cursor, h, db)
 
     print('爬取并插入MySQL完成')
 
+    db.commit()
     cursor.close()
 
 
@@ -105,18 +108,16 @@ def save_cities_2_db(cursor, c, db):
     print(c_sql)
     try:
         cursor.execute(c_sql)
-        db.commit()
     except ValueError:
         print(ValueError)
         db.rollback()
 
 
-def save_hospitals_2_db(cursor, c, db):
+def save_hospitals_2_db(cursor, h, db):
     h_sql = "insert into t_hospitals(mid, name, cityId) values (%d, \"%s\", %d)" % (h["id"], h["name"], h["cityId"])
 
     try:
         cursor.execute(h_sql)
-        db.commit()
     except ValueError:
         print(ValueError)
         db.rollback()
